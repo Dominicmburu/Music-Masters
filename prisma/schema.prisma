@@ -1,0 +1,301 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STUDENT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum LessonType {
+  PRIVATE
+  GROUP
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_REMINDER
+  BOOKING_CANCELLED
+  CLASS_RECORDING_SHARED
+  GENERAL
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  avatar        String?
+  role          UserRole  @default(STUDENT)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  bookings          Booking[]
+  payments          Payment[]
+  notifications     Notification[]
+  sharedRecordings  SharedRecording[]
+  progressNotes     ProgressNote[]    @relation("StudentNotes")
+  writtenNotes      ProgressNote[]    @relation("InstructorNotes")
+  
+  @@map("users")
+}
+
+model Instrument {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  icon        String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  lessons     Lesson[]
+  bookings    Booking[]
+  recordings  ClassRecording[]
+
+  @@map("instruments")
+}
+
+model Lesson {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  instrumentId  String
+  lessonType    LessonType
+  duration      Int         // in minutes
+  price         Float
+  maxStudents   Int         @default(1)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  instrument    Instrument  @relation(fields: [instrumentId], references: [id])
+  bookings      Booking[]
+  timeSlots     TimeSlot[]
+
+  @@map("lessons")
+}
+
+model TimeSlot {
+  id          String    @id @default(cuid())
+  lessonId    String
+  dayOfWeek   Int       // 0-6 (Sunday-Saturday)
+  startTime   String    // HH:mm format
+  endTime     String    // HH:mm format
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+
+  @@map("time_slots")
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  userId        String
+  lessonId      String
+  instrumentId  String
+  timeSlotId    String?
+  scheduledDate DateTime
+  startTime     String
+  endTime       String
+  status        BookingStatus @default(PENDING)
+  notes         String?
+  adminNotes    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id])
+  lesson        Lesson        @relation(fields: [lessonId], references: [id])
+  instrument    Instrument    @relation(fields: [instrumentId], references: [id])
+  timeSlot      TimeSlot?     @relation(fields: [timeSlotId], references: [id])
+  payment       Payment?
+
+  @@map("bookings")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  userId        String
+  bookingId     String        @unique
+  amount        Float
+  currency      String        @default("KES")
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?
+  transactionId String?
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id])
+  booking       Booking       @relation(fields: [bookingId], references: [id])
+
+  @@map("payments")
+}
+
+model ClassRecording {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  youtubeUrl    String
+  thumbnailUrl  String?
+  instrumentId  String?
+  duration      String?   // e.g., "45:30"
+  recordedAt    DateTime  @default(now())
+  isPublic      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  instrument    Instrument?       @relation(fields: [instrumentId], references: [id])
+  sharedWith    SharedRecording[]
+
+  @@map("class_recordings")
+}
+
+model SharedRecording {
+  id           String         @id @default(cuid())
+  recordingId  String
+  userId       String
+  sharedAt     DateTime       @default(now())
+  viewedAt     DateTime?
+  message      String?
+
+  // Relations
+  recording    ClassRecording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id])
+
+  @@unique([recordingId, userId])
+  @@map("shared_recordings")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model ProgressNote {
+  id            String    @id @default(cuid())
+  studentId     String
+  instructorId  String
+  title         String
+  content       String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  student       User      @relation("StudentNotes", fields: [studentId], references: [id])
+  instructor    User      @relation("InstructorNotes", fields: [instructorId], references: [id])
+
+  @@map("progress_notes")
+}
+
+model BlockedDate {
+  id          String    @id @default(cuid())
+  date        DateTime
+  reason      String?
+  createdAt   DateTime  @default(now())
+
+  @@map("blocked_dates")
+}
+
+model StudioSettings {
+  id                    String    @id @default(cuid())
+  businessName          String    @default("Musical Masters")
+  businessEmail         String?
+  businessPhone         String?
+  businessAddress       String?
+  openingTime           String    @default("08:00")
+  closingTime           String    @default("20:00")
+  workingDays           Int[]     @default([1, 2, 3, 4, 5, 6])
+  bookingNoticeHours    Int       @default(24)
+  cancellationHours     Int       @default(24)
+  currency              String    @default("KES")
+  reminderHoursBefore   Int       @default(1)
+  updatedAt             DateTime  @updatedAt
+
+  @@map("studio_settings")
+}
+
+model Testimonial {
+  id          String    @id @default(cuid())
+  studentName String
+  content     String
+  rating      Int       @default(5)
+  avatar      String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  @@map("testimonials")
+}
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  content     String
+  coverImage  String?
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("blog_posts")
+}
+
+model ContactMessage {
+  id          String    @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String
+  message     String
+  isRead      Boolean   @default(false)
+  repliedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("contact_messages")
+}

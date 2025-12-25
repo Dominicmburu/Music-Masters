@@ -77,7 +77,7 @@ SMTP_PASSWORD="your-app-password"
 EMAIL_FROM="Musical Masters <noreply@musicalmasters.com>"
 
 # WhatsApp
-NEXT_PUBLIC_WHATSAPP_NUMBER="+254712345678"
+NEXT_PUBLIC_WHATSAPP_NUMBER="+254717794150"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"

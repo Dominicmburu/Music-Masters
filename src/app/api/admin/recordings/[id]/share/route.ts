@@ -1,0 +1,84 @@
+import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+import { getSession } from '@/lib/auth'
+import { sendRecordingShared } from '@/lib/email'
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getSession()
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = params
+    const body = await req.json()
+    const { studentIds, message } = body
+
+    if (!studentIds || studentIds.length === 0) {
+      return NextResponse.json({ error: 'No students selected' }, { status: 400 })
+    }
+
+    const recording = await prisma.classRecording.findUnique({
+      where: { id },
+    })
+
+    if (!recording) {
+      return NextResponse.json({ error: 'Recording not found' }, { status: 404 })
+    }
+
+    // Get students
+    const students = await prisma.user.findMany({
+      where: { id: { in: studentIds } },
+    })
+
+    // Create shared recordings
+    const sharedRecordings = await Promise.all(
+      studentIds.map(async (studentId: string) => {
+        // Check if already shared
+        const existing = await prisma.sharedRecording.findUnique({
+          where: { recordingId_userId: { recordingId: id, userId: studentId } },
+        })
+        if (existing) return existing
+
+        return prisma.sharedRecording.create({
+          data: {
+            recordingId: id,
+            userId: studentId,
+            message,
+          },
+        })
+      })
+    )
+
+    // Create notifications and send emails
+    for (const student of students) {
+      // Create notification
+      await prisma.notification.create({
+        data: {
+          userId: student.id,
+          type: 'CLASS_RECORDING_SHARED',
+          title: 'New Recording Shared! 📹',
+          message: `A new class recording "${recording.title}" has been shared with you.`,
+          metadata: { recordingId: id },
+        },
+      })
+
+      // Send email (non-blocking)
+      sendRecordingShared({
+        studentEmail: student.email,
+        studentName: student.firstName,
+        recordingTitle: recording.title,
+        description: recording.description || undefined,
+        message,
+      }).catch(console.error)
+    }
+
+    return NextResponse.json({ success: true, shared: sharedRecordings.length })
+  } catch (error) {
+    console.error('Error sharing recording:', error)
+    return NextResponse.json({ error: 'Failed to share recording' }, { status: 500 })
+  }
+}
