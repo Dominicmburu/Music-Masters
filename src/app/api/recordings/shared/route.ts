@@ -2,6 +2,28 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
+interface SharedRecordingWithDetails {
+  sharedAt: Date
+  viewedAt: Date | null
+  message: string | null
+  recording: {
+    id: string
+    title: string
+    description: string | null
+    youtubeUrl: string
+    thumbnailUrl: string | null
+    duration: string | null
+    recordedAt: Date
+    instrument: {
+      id: string
+      name: string
+      icon: string | null
+    } | null
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
@@ -12,7 +34,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const sharedRecordings = await prisma.sharedRecording.findMany({
+    const sharedRecordings: SharedRecordingWithDetails[] = await prisma.sharedRecording.findMany({
       where: { userId: session.userId },
       include: {
         recording: {
@@ -23,7 +45,7 @@ export async function GET(req: NextRequest) {
       take: limit,
     })
 
-    const recordings = sharedRecordings.map(sr => ({
+    const recordings = sharedRecordings.map((sr: SharedRecordingWithDetails) => ({
       id: sr.recording.id,
       title: sr.recording.title,
       description: sr.recording.description,

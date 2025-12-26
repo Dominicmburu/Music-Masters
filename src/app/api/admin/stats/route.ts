@@ -3,6 +3,13 @@ import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { startOfMonth, startOfDay, endOfDay } from 'date-fns'
 
+export const dynamic = 'force-dynamic'
+
+interface BookingWithLesson {
+  id: string
+  lesson: { price: number } | null
+}
+
 export async function GET() {
   try {
     const session = await getSession()
@@ -18,7 +25,7 @@ export async function GET() {
     // Run all queries with error handling
     let totalStudents = 0
     let totalBookings = 0
-    let completedBookings: any[] = []
+    let completedBookings: BookingWithLesson[] = []
     let newStudentsThisMonth = 0
     let bookingsToday = 0
     let upcomingLessons = 0
@@ -63,15 +70,15 @@ export async function GET() {
     } catch (e) { console.error('Error counting upcoming lessons:', e) }
 
     // Calculate revenue
-    const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.lesson?.price || 0), 0)
+    const totalRevenue = completedBookings.reduce((sum: number, b: BookingWithLesson) => sum + (b.lesson?.price || 0), 0)
     
     let revenueThisMonth = 0
     try {
-      const monthlyCompletedBookings = await prisma.booking.findMany({
+      const monthlyCompletedBookings: BookingWithLesson[] = await prisma.booking.findMany({
         where: { status: 'COMPLETED', scheduledDate: { gte: monthStart } },
         include: { lesson: true },
       })
-      revenueThisMonth = monthlyCompletedBookings.reduce((sum, b) => sum + (b.lesson?.price || 0), 0)
+      revenueThisMonth = monthlyCompletedBookings.reduce((sum: number, b: BookingWithLesson) => sum + (b.lesson?.price || 0), 0)
     } catch (e) { console.error('Error calculating monthly revenue:', e) }
 
     return NextResponse.json({

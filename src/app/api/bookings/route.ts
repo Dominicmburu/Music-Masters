@@ -2,7 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { sendBookingConfirmation } from '@/lib/email'
-import { format, parseISO } from 'date-fns'
+import { format } from 'date-fns'
+import { BookingStatus } from '@prisma/client'
+
+export const dynamic = 'force-dynamic'
+
+interface BookingInput {
+  lessonId: string
+  instrumentId: string
+  scheduledDate: string
+  startTime: string
+  endTime: string
+  timeSlotId?: string
+  notes?: string
+}
+
+interface BookingFilter {
+  userId?: string
+  status?: BookingStatus
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,7 +33,8 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status')
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    const where: any = {}
+    // const where: { userId?: string; status?: string } = {}
+    const where: BookingFilter = {}
     
     // Students can only see their own bookings
     if (session.role === 'STUDENT') {
@@ -23,7 +42,7 @@ export async function GET(req: NextRequest) {
     }
     
     if (status) {
-      where.status = status
+      where.status = status as BookingStatus
     }
 
     const bookings = await prisma.booking.findMany({
@@ -52,7 +71,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    const body: BookingInput = await req.json()
     const { lessonId, instrumentId, scheduledDate, startTime, endTime, timeSlotId, notes } = body
 
     // Validate required fields
@@ -78,7 +97,7 @@ export async function POST(req: NextRequest) {
         status: { in: ['PENDING', 'CONFIRMED'] },
         OR: [
           { userId: session.userId },
-          { timeSlotId },
+          ...(timeSlotId ? [{ timeSlotId }] : []),
         ],
       },
     })
@@ -96,8 +115,8 @@ export async function POST(req: NextRequest) {
         scheduledDate: new Date(scheduledDate),
         startTime,
         endTime,
-        timeSlotId,
-        notes,
+        timeSlotId: timeSlotId || null,
+        notes: notes || null,
         status: 'CONFIRMED',
       },
       include: {

@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { parseISO, format, getDay } from 'date-fns'
+import { parseISO, getDay } from 'date-fns'
+
+export const dynamic = 'force-dynamic'
+
+interface TimeSlotRecord {
+  id: string
+  startTime: string
+  endTime: string
+}
+
+interface BookingRecord {
+  startTime: string
+  timeSlotId: string | null
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,7 +29,7 @@ export async function GET(req: NextRequest) {
     const dayOfWeek = getDay(date)
 
     // Get all time slots for the lesson on this day of week
-    const timeSlots = await prisma.timeSlot.findMany({
+    const timeSlots: TimeSlotRecord[] = await prisma.timeSlot.findMany({
       where: {
         lessonId,
         dayOfWeek,
@@ -26,7 +39,7 @@ export async function GET(req: NextRequest) {
     })
 
     // Get existing bookings for this date
-    const existingBookings = await prisma.booking.findMany({
+    const existingBookings: BookingRecord[] = await prisma.booking.findMany({
       where: {
         scheduledDate: date,
         status: { in: ['PENDING', 'CONFIRMED'] },
@@ -34,11 +47,11 @@ export async function GET(req: NextRequest) {
       select: { startTime: true, timeSlotId: true },
     })
 
-    const bookedSlotIds = new Set(existingBookings.map(b => b.timeSlotId))
-    const bookedTimes = new Set(existingBookings.map(b => b.startTime))
+    const bookedSlotIds = new Set(existingBookings.map((b: BookingRecord) => b.timeSlotId))
+    const bookedTimes = new Set(existingBookings.map((b: BookingRecord) => b.startTime))
 
     // Mark slots as available or not
-    const slots = timeSlots.map(slot => ({
+    const slots = timeSlots.map((slot: TimeSlotRecord) => ({
       id: slot.id,
       startTime: slot.startTime,
       endTime: slot.endTime,

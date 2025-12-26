@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
+interface NotificationFilter {
+  userId: string
+  isRead?: boolean
+}
+
+interface UpdateNotificationsBody {
+  notificationIds?: string[]
+  markAllRead?: boolean
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
@@ -13,7 +25,7 @@ export async function GET(req: NextRequest) {
     const unreadOnly = searchParams.get('unread') === 'true'
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const where: any = { userId: session.userId }
+    const where: NotificationFilter = { userId: session.userId }
     if (unreadOnly) where.isRead = false
 
     const notifications = await prisma.notification.findMany({
@@ -36,7 +48,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    const body: UpdateNotificationsBody = await req.json()
     const { notificationIds, markAllRead } = body
 
     if (markAllRead) {

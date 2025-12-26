@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendLessonReminders, markCompletedLessons } from '@/lib/cron'
 
+export const dynamic = 'force-dynamic'
+
 // This endpoint can be called by a cron service (like Vercel Cron, Railway Cron, etc.)
 // Add authentication via a secret key in production
 export async function GET(req: NextRequest) {

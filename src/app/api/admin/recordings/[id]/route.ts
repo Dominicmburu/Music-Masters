@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
+interface RouteParams {
+  params: { id: string }
+}
+
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getSession()
@@ -27,7 +33,7 @@ export async function DELETE(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getSession()

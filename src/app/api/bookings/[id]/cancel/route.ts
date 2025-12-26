@@ -4,9 +4,15 @@ import { getSession } from '@/lib/auth'
 import { sendBookingCancellation } from '@/lib/email'
 import { format, differenceInHours } from 'date-fns'
 
+export const dynamic = 'force-dynamic'
+
+interface RouteParams {
+  params: { id: string }
+}
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getSession()

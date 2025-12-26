@@ -3,6 +3,16 @@ import prisma from '@/lib/prisma'
 import { getSession, hashPassword } from '@/lib/auth'
 import { sendWelcomeEmail } from '@/lib/email'
 
+export const dynamic = 'force-dynamic'
+
+interface CreateStudentInput {
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string
+  password?: string
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
@@ -40,7 +50,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    const body: CreateStudentInput = await req.json()
     const { firstName, lastName, email, phone, password } = body
 
     if (!firstName || !lastName || !email) {

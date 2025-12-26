@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
+import { BookingStatus } from '@prisma/client'
+
+export const dynamic = 'force-dynamic'
+
+interface RouteParams {
+  params: { id: string }
+}
+
+interface UpdateStatusInput {
+  status: BookingStatus
+}
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getSession()
@@ -13,10 +24,10 @@ export async function PATCH(
     }
 
     const { id } = params
-    const body = await req.json()
+    const body: UpdateStatusInput = await req.json()
     const { status } = body
 
-    const validStatuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW']
+    const validStatuses: BookingStatus[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW']
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }

@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
+interface BookingWithLesson {
+  lesson: {
+    duration: number
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
@@ -29,7 +37,7 @@ export async function GET(req: NextRequest) {
     ])
 
     // Calculate hours learned
-    const completedBookings = await prisma.booking.findMany({
+    const completedBookings: BookingWithLesson[] = await prisma.booking.findMany({
       where: {
         userId: session.userId,
         status: 'COMPLETED',
@@ -37,7 +45,7 @@ export async function GET(req: NextRequest) {
       include: { lesson: true },
     })
 
-    const hoursLearned = completedBookings.reduce((total, booking) => {
+    const hoursLearned = completedBookings.reduce((total: number, booking: BookingWithLesson) => {
       return total + (booking.lesson.duration / 60)
     }, 0)
 

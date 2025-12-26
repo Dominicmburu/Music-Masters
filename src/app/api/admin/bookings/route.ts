@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { parseISO } from 'date-fns'
+import { BookingStatus } from '@prisma/client'
+
+export const dynamic = 'force-dynamic'
+
+interface BookingFilter {
+  scheduledDate?: {
+    gte: Date
+    lte: Date
+  }
+  status?: BookingStatus
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,7 +27,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status')
     const limit = parseInt(searchParams.get('limit') || '100')
 
-    const where: any = {}
+    const where: BookingFilter = {}
 
     if (startDate && endDate) {
       where.scheduledDate = {
@@ -26,7 +37,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (status) {
-      where.status = status
+      where.status = status as BookingStatus
     }
 
     const bookings = await prisma.booking.findMany({

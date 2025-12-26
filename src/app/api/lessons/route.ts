@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { LessonType } from '@prisma/client'
+
+
+export const dynamic = 'force-dynamic'
+
+interface LessonFilter {
+  isActive: boolean
+  instrumentId?: string
+  lessonType?: LessonType
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -7,9 +17,9 @@ export async function GET(req: NextRequest) {
     const instrumentId = searchParams.get('instrumentId')
     const lessonType = searchParams.get('type')
 
-    const where: any = { isActive: true }
+    const where: LessonFilter = { isActive: true }
     if (instrumentId) where.instrumentId = instrumentId
-    if (lessonType) where.lessonType = lessonType
+    if (lessonType) where.lessonType = lessonType as LessonType
 
     const lessons = await prisma.lesson.findMany({
       where,

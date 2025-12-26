@@ -3,9 +3,20 @@ import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { sendRecordingShared } from '@/lib/email'
 
+export const dynamic = 'force-dynamic'
+
+interface RouteParams {
+  params: { id: string }
+}
+
+interface ShareRecordingInput {
+  studentIds: string[]
+  message?: string
+}
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getSession()
@@ -14,7 +25,7 @@ export async function POST(
     }
 
     const { id } = params
-    const body = await req.json()
+    const body: ShareRecordingInput = await req.json()
     const { studentIds, message } = body
 
     if (!studentIds || studentIds.length === 0) {
@@ -47,7 +58,7 @@ export async function POST(
           data: {
             recordingId: id,
             userId: studentId,
-            message,
+            message: message || null,
           },
         })
       })
@@ -72,7 +83,7 @@ export async function POST(
         studentName: student.firstName,
         recordingTitle: recording.title,
         description: recording.description || undefined,
-        message,
+        message: message || undefined,
       }).catch(console.error)
     }
 

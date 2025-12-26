@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
+interface CreateRecordingInput {
+  title: string
+  description?: string
+  youtubeUrl: string
+  thumbnailUrl?: string
+  instrumentId?: string
+  duration?: string
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession()
@@ -33,7 +44,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
+    const body: CreateRecordingInput = await req.json()
     const { title, description, youtubeUrl, thumbnailUrl, instrumentId, duration } = body
 
     if (!title || !youtubeUrl) {
@@ -43,11 +54,11 @@ export async function POST(req: NextRequest) {
     const recording = await prisma.classRecording.create({
       data: {
         title,
-        description,
+        description: description || null,
         youtubeUrl,
-        thumbnailUrl,
+        thumbnailUrl: thumbnailUrl || null,
         instrumentId: instrumentId || null,
-        duration,
+        duration: duration || null,
       },
       include: {
         instrument: true,
