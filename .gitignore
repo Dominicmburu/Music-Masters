@@ -29,3 +29,6 @@ prisma/dev.db-journal
 coverage/
 
 .cache/
+
+.next/
+out/
