@@ -12,37 +12,37 @@ import { Badge } from '@/components/ui/badge'
 
 const lessonDetails = {
   beginner: [
-    'Introduction to piano keys and hand positioning',
-    'Basic music theory and note reading',
-    'Simple melodies and finger exercises',
-    'Proper posture and technique',
-    'Introduction to rhythm and timing'
+    'Proper embouchure formation and mouthpiece buzzing',
+    'Basic breathing techniques and breath support',
+    'First notes, long tones, and simple fingerings',
+    'Introduction to rhythm, counting, and basic articulation (tonguing)',
+    'Care of the instrument and assembly basics'
   ],
   intermediate: [
-    'Advanced music theory and sight-reading',
-    'Scales, arpeggios, and chord progressions',
-    'Classical and contemporary repertoire',
-    'Dynamics and expression techniques',
-    'Performance preparation'
+    'Major & minor scales, arpeggios, and chromatic exercises',
+    'Improved tone control, dynamics, and intonation',
+    'Articulation patterns (staccato, legato, slurring)',
+    'Etudes and graded repertoire from ABRSM/LCME syllabuses',
+    'Introduction to transposition and basic performance skills'
   ],
   advanced: [
-    'Complex classical compositions',
-    'Jazz improvisation and harmony',
-    'Advanced technical exercises',
-    'Interpretation and musicality',
-    'Recital and competition preparation'
+    'Advanced technical exercises, flexibility, and double/triple tonguing',
+    'Complex scales, studies, and extended range development',
+    'Musical interpretation, phrasing, and style (classical & jazz elements)',
+    'Orchestral excerpts and exam/competition repertoire',
+    'Recital preparation, endurance building, and advanced vibrato'
   ]
 }
 
 const instructorHighlights = [
-  'Certified piano instructors with 10+ years experience',
-  'Personalized curriculum tailored to your goals',
-  'Access to quality pianos and practice rooms',
-  'Regular progress assessments and feedback',
-  'Performance opportunities throughout the year'
+  'Certified brass instructors experienced with ABRSM & LCME syllabuses',
+  'Personalized exam-focused curriculum for Grades Step/Initial to 8',
+  'Access to quality trumpets, practice mutes, and performance spaces',
+  'Regular progress assessments, mock exams, and detailed feedback',
+  'Quarterly performance opportunities and concert preparation'
 ]
 
-export default function PianoLessonsPage() {
+export default function TrumpetLessonsPage() {
   return (
     <main className="min-h-screen">
       <Header />
@@ -55,11 +55,11 @@ export default function PianoLessonsPage() {
             <div>
               <Badge className="mb-4">Instrument Lessons</Badge>
               <h1 className="text-4xl md:text-6xl font-bold font-display text-white mb-6">
-                Piano <span className="text-coral-500">Lessons</span>
+                Trumpet <span className="text-coral-500">Lessons</span>
               </h1>
               <p className="text-xl text-charcoal-300 mb-8">
-                Master the piano with expert instruction. From classical to jazz, learn to play 
-                beautiful music with proper technique and theory foundation.
+                Develop brilliant tone, precise technique, and confident performance skills on the trumpet. 
+                Structured preparation for ABRSM and LCME graded exams from beginner to Grade 8.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link href="/register">
@@ -76,8 +76,8 @@ export default function PianoLessonsPage() {
             </div>
             <div className="relative h-[400px] rounded-2xl overflow-hidden">
               <Image
-                src="/images/instruments/Piano.jpg"
-                alt="Piano lessons"
+                src="/images/instruments/Trumpet.jpg" // ← Make sure this image exists!
+                alt="Trumpet lessons"
                 fill
                 className="object-cover"
               />
@@ -193,7 +193,7 @@ export default function PianoLessonsPage() {
             <div className="text-center mb-12">
               <span className="text-coral-500 text-sm font-semibold uppercase tracking-wider">Excellence</span>
               <h2 className="text-3xl md:text-4xl font-bold font-display text-charcoal-900 mt-2">
-                Why Learn Piano With Us?
+                Why Learn Trumpet With Us?
               </h2>
             </div>
             <Card>

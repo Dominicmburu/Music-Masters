@@ -110,14 +110,14 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-coral-500 mt-0.5 shrink-0" />
                 <span className="text-charcoal-400">
-                  Westlands, Nairobi<br />Kenya
+                  Jem Park<br />Sabaki<br />Kenya
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-coral-500 shrink-0" />
                 <div className="text-charcoal-400">
                   <a href="tel:+254712345678" className="hover:text-white transition-colors block">
-                    +254 712 345 678
+                    +254 784 177 547
                   </a>
                   <a href="tel:+254733456789" className="hover:text-white transition-colors block">
                     +254 733 456 789
