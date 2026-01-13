@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Music, Clock, Users, ArrowRight, CheckCircle, Calendar } from 'lucide-react'
+import { Music, Clock, Users, ArrowRight, CheckCircle, Calendar, Award } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
@@ -156,6 +156,69 @@ export default function LessonsPage() {
           </div>
         </div>
       </section>
+
+      {/* About Our Exam Systems */}
+<section className="py-20 bg-white">
+  <div className="container mx-auto px-4 lg:px-8">
+    <div className="text-center mb-12">
+      <span className="text-coral-500 text-sm font-semibold uppercase tracking-wider">Our Qualifications</span>
+      <h2 className="text-3xl md:text-4xl font-bold font-display text-charcoal-900 mt-2">
+        Internationally Recognized Exam Boards
+      </h2>
+      <p className="text-lg text-charcoal-600 mt-4 max-w-3xl mx-auto">
+        All our lessons follow structured syllabuses from two of the world's most respected music examination boards.
+      </p>
+    </div>
+
+    <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+      {/* ABRSM Card */}
+      <Card className="border-2 border-charcoal-100 hover:border-coral-300 transition-colors">
+        <CardHeader className="text-center pb-4">
+          <div className="w-20 h-20 bg-coral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Award className="w-10 h-10 text-coral-500" />
+          </div>
+          <CardTitle className="text-3xl">ABRSM</CardTitle>
+          <p className="text-charcoal-500 mt-1">Associated Board of the Royal Schools of Music</p>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-charcoal-700 mb-4">
+            Established in 1889, ABRSM is one of the world's leading music exam boards, partnering with the Royal Schools of Music (UK). 
+            It offers graded exams from Initial/Preparatory to Grade 8 (plus diplomas), taken by over 650,000 candidates annually in 90+ countries.
+          </p>
+          <p className="text-charcoal-600 text-sm italic">
+            Known for its rigorous standards, comprehensive musicianship development, and global recognition.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* LCME Card */}
+      <Card className="border-2 border-charcoal-100 hover:border-coral-300 transition-colors">
+        <CardHeader className="text-center pb-4">
+          <div className="w-20 h-20 bg-coral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Award className="w-10 h-10 text-coral-500" />
+          </div>
+          <CardTitle className="text-3xl">LCME</CardTitle>
+          <p className="text-charcoal-500 mt-1">London College of Music Examinations</p>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-charcoal-700 mb-4">
+            Founded in 1887 and part of the University of West London, LCME provides inclusive, performance-focused graded exams from pre-grade levels to Grade 8 (plus diplomas). 
+            It emphasizes practical skills, diverse repertoire, and accessibility for learners of all ages and backgrounds.
+          </p>
+          <p className="text-charcoal-600 text-sm italic">
+            Globally recognised qualifications with flexible options and strong pathways to further study.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+
+    <div className="text-center mt-12">
+      <p className="text-charcoal-700 max-w-3xl mx-auto text-lg">
+        By following both syllabuses, we give students the best of structured classical training and flexible, performance-oriented preparation — helping you achieve internationally respected certifications and confident quarterly performances.
+      </p>
+    </div>
+  </div>
+</section>
 
       {/* Pricing & Payment Info */}
       <section className="py-20 bg-white">

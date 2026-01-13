@@ -215,73 +215,43 @@ export default function VocalsLessonsPage() {
         </div>
       </section>
 
-      {/* Pricing */}
+     {/* Pricing – Using your tiered structure from previous instructions */}
       <section className="py-20 bg-charcoal-50">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-12">
             <span className="text-coral-500 text-sm font-semibold uppercase tracking-wider">Investment</span>
             <h2 className="text-3xl md:text-4xl font-bold font-display text-charcoal-900 mt-2">
-              Lesson Pricing
+              Lesson Pricing (Private – 60 min)
             </h2>
+            <p className="text-lg text-charcoal-600 mt-4">
+              Tiered according to exam grade level • 20% sibling discount available
+            </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Private Lessons</CardTitle>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-3xl font-bold text-coral-500">From KES 2,500</span>
-                  <span className="text-charcoal-500">/ 60 min</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-charcoal-600">One-on-one instruction</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-charcoal-600">Personalized vocal development</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-charcoal-600">Flexible scheduling</span>
-                  </li>
-                </ul>
-                <Link href="/register">
-                  <Button className="w-full">Book Private Lesson</Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Group Classes</CardTitle>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-3xl font-bold text-coral-500">From KES 1,500</span>
-                  <span className="text-charcoal-500">/ 90 min</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-charcoal-600">Small groups (3-6 singers)</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-charcoal-600">Harmonies & ensemble experience</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-charcoal-600">Fun & motivating environment</span>
-                  </li>
-                </ul>
-                <Link href="/register">
-                  <Button className="w-full" variant="outline">Book Group Class</Button>
-                </Link>
-              </CardContent>
-            </Card>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              { level: 'Step 1 – Grade 3', price: 'KSh 1,000', sibling: 'KSh 800' },
+              { level: 'Grade 4 – Grade 6', price: 'KSh 1,200', sibling: 'KSh 960' },
+              { level: 'Grade 7 – Grade 8', price: 'KSh 1,500', sibling: 'KSh 1,200' },
+            ].map((tier) => (
+              <Card key={tier.level} className="border-2 border-charcoal-200 hover:border-coral-500 transition-colors">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-xl">{tier.level}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-4xl font-bold text-coral-500 mb-2">{tier.price}</p>
+                  <p className="text-charcoal-600 mb-6">per lesson</p>
+                  <div className="bg-charcoal-50 p-4 rounded-lg">
+                    <p className="font-semibold mb-1">Sibling Discount (20%)</p>
+                    <p className="text-2xl font-bold text-green-600">{tier.sibling}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link href="/register">
+              <Button size="lg">Enroll & Start Preparing for Your Grade</Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -290,10 +260,10 @@ export default function VocalsLessonsPage() {
       <section className="py-20 bg-coral-500">
         <div className="container mx-auto px-4 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold font-display text-white mb-6">
-            Ready to Find & Free Your Voice?
+            Ready to Play with Power & Precision?
           </h2>
           <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-            Book your first vocal lesson today and start singing with confidence, power, and joy.
+            Join our exam-focused trumpet program and build the skills for ABRSM/LCME success and confident performances.
           </p>
           <Link href="/register">
             <Button size="lg" variant="white">Book Your First Lesson</Button>
