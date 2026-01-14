@@ -89,7 +89,8 @@ export default function HomePage() {
             </div>
             <div className="relative hidden lg:flex items-center justify-center">
               <div className="w-80 h-80 bg-gradient-to-br from-charcoal-800 to-charcoal-900 rounded-3xl flex items-center justify-center">
-                <Music className="w-32 h-32 text-coral-500/50" />
+               <img src="/images/instruments/class.jpg" alt="" />
+                {/* <Music className="w-32 h-32 text-coral-500/50" /> */}
               </div>
             </div>
           </div>
