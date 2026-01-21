@@ -107,7 +107,7 @@ export default function BlogPage() {
             </div>
             <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
               <Image
-                src="/images/instruments/lessons.jpg" // Reuse or add a blog-specific image
+                src="/images/instruments/blog.jpg" 
                 alt="Musical inspiration and learning"
                 fill
                 className="object-cover"

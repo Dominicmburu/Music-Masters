@@ -25,7 +25,7 @@ const categories = [
       { name: 'Yamaha C40 Classical Guitar', image: '/images/instruments/Guitar.jpg', price: 'KSh 19,000', description: 'Renowned beginner classical guitar — quality you can trust at a fantastic price.' },
       { name: 'Fender-Style Electric Guitar', image: '/images/instruments/ElectricGuitar.jpg', price: 'KSh 18,000', description: 'Versatile tones and great playability — serious value for electric guitarists.' },
       { name: '6-String Bass Guitar', image: '/images/instruments/BassGuitar.jpg', price: 'KSh 16,000', description: 'Deep, powerful bass sound — professional quality at student-friendly pricing.' },
-      { name: 'Soprano Ukulele', image: '/images/instruments/Ukulele.jpg', price: 'KSh 3,500', description: 'Bright, portable, and joyful — the perfect entry into strings.' },
+      { name: 'Soprano Ukulele', image: '/images/instruments/ukulele.jpg', price: 'KSh 3,500', description: 'Bright, portable, and joyful — the perfect entry into strings.' },
     ]
   },
   {
