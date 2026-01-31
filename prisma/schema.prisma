@@ -40,6 +40,15 @@ enum NotificationType {
   GENERAL
 }
 
+enum ProductCategory {
+  KEYBOARDS
+  GUITARS
+  DRUMS
+  STRING
+  BRASS
+  WOODWIND
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -60,7 +69,8 @@ model User {
   sharedRecordings  SharedRecording[]
   progressNotes     ProgressNote[]    @relation("StudentNotes")
   writtenNotes      ProgressNote[]    @relation("InstructorNotes")
-  
+  cart              Cart?
+
   @@map("users")
 }
 
@@ -271,19 +281,104 @@ model Testimonial {
   @@map("testimonials")
 }
 
+// ============================================
+// SHOP MODELS
+// ============================================
+
+model Product {
+  id          String          @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  category    ProductCategory
+  image       String          // Base64 encoded image
+  stock       Int             @default(0)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // Relations
+  cartItems   CartItem[]
+
+  @@map("products")
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+// ============================================
+// BLOG MODELS
+// ============================================
+
+model BlogCategory {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  createdAt DateTime   @default(now())
+
+  // Relations
+  posts     BlogPost[]
+
+  @@map("blog_categories")
+}
+
 model BlogPost {
-  id          String    @id @default(cuid())
+  id          String        @id @default(cuid())
   title       String
-  slug        String    @unique
+  slug        String        @unique
   excerpt     String?
-  content     String
-  coverImage  String?
-  isPublished Boolean   @default(false)
+  content     String        // HTML content
+  coverImage  String?       // Base64 image
+  categoryId  String?
+  isPublished Boolean       @default(false)
   publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  category    BlogCategory? @relation(fields: [categoryId], references: [id])
 
   @@map("blog_posts")
+}
+
+// ============================================
+// NEWSLETTER & CONTACT MODELS
+// ============================================
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  isActive       Boolean   @default(true)
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+
+  @@map("newsletter_subscribers")
 }
 
 model ContactMessage {
@@ -294,6 +389,7 @@ model ContactMessage {
   subject     String
   message     String
   isRead      Boolean   @default(false)
+  response    String?   // Admin response text
   repliedAt   DateTime?
   createdAt   DateTime  @default(now())
 

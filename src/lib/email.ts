@@ -230,23 +230,73 @@ export function getEmailTemplate(type: string, data: Record<string, any>): strin
               <h2 style="color: #1a1a1e; margin-top: 0;">Welcome, ${data.firstName}! 🎉</h2>
               <p>We're thrilled to have you join Musical Masters!</p>
               <p>Your account has been created successfully. You can now:</p>
-              
+
               <ul style="color: #333; line-height: 2;">
                 <li>📅 Book lessons with our expert instructors</li>
                 <li>🎵 Access your personalized dashboard</li>
                 <li>📹 Watch shared class recordings</li>
                 <li>📊 Track your musical progress</li>
               </ul>
-              
+
               <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" class="button">Login to Your Account</a>
-              
+
               <p style="color: #666; font-size: 14px;">
                 Have questions? Contact us anytime at info@musicalmasters.com or via WhatsApp.
               </p>
             </div>
             <div class="footer">
-              <p>Musical Masters | Westlands, Nairobi, Kenya</p>
-              <p>+254 712 345 678 | info@musicalmasters.com</p>
+              <p>Musical Masters | Jem Park, Sabaki, Kenya</p>
+              <p>+254 784 177 547 | info@musicalmasters.com</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+    case 'welcome_with_credentials':
+      return `
+        <!DOCTYPE html>
+        <html>
+        <head>${baseStyles}</head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎵 Musical Masters</h1>
+              <p>Welcome to the Family!</p>
+            </div>
+            <div class="content">
+              <h2 style="color: #1a1a1e; margin-top: 0;">Welcome, ${data.firstName}! 🎉</h2>
+              <p>We're thrilled to have you join Musical Masters!</p>
+              <p>Your account has been created. Here are your login credentials:</p>
+
+              <div class="highlight-box">
+                <h3 style="margin-top: 0; color: #ef4444;">Your Login Details</h3>
+                <table class="details-table">
+                  <tr><td>Email</td><td><strong>${data.email}</strong></td></tr>
+                  <tr><td>Password</td><td><strong>${data.password}</strong></td></tr>
+                </table>
+                <p style="font-size: 12px; color: #666; margin-bottom: 0;">
+                  We recommend changing your password after your first login.
+                </p>
+              </div>
+
+              <p>With your account, you can:</p>
+              <ul style="color: #333; line-height: 2;">
+                <li>📅 Book lessons with our expert instructors</li>
+                <li>🎵 Access your personalized dashboard</li>
+                <li>📹 Watch shared class recordings</li>
+                <li>📊 Track your musical progress</li>
+              </ul>
+
+              <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" class="button">Login to Your Account</a>
+
+              <p style="color: #666; font-size: 14px;">
+                Have questions? Contact us anytime at info@musicalmasters.com or via WhatsApp.
+              </p>
+            </div>
+            <div class="footer">
+              <p>Musical Masters | Jem Park, Sabaki, Kenya</p>
+              <p>+254 784 177 547 | info@musicalmasters.com</p>
             </div>
           </div>
         </body>
@@ -330,6 +380,20 @@ export async function sendWelcomeEmail(user: {
   return sendEmail({
     to: user.email,
     subject: '🎵 Welcome to Musical Masters!',
+    html,
+  })
+}
+
+export async function sendWelcomeEmailWithCredentials(user: {
+  email: string
+  firstName: string
+  password: string
+}) {
+  const html = getEmailTemplate('welcome_with_credentials', user)
+
+  return sendEmail({
+    to: user.email,
+    subject: '🎵 Welcome to Musical Masters - Your Login Credentials',
     html,
   })
 }

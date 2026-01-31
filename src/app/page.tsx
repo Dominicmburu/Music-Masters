@@ -42,11 +42,11 @@ const features = [
   { icon: MapPin, title: 'Convenient Nairobi Location', description: 'Purpose-built facility in a central, accessible area' },
 ]
 
-const testimonials = [
-  { name: 'Aisha Mwangi', role: 'Piano – Grade 6', content: 'Passed my ABRSM Grade 5 with distinction — the focused syllabus teaching really works!' },
-  { name: 'Ethan Otieno', role: 'Guitar', content: 'From beginner to Grade 4 in under two years. The quarterly performances changed everything.' },
-  { name: 'Zara Khan', role: 'Voice', content: 'Outstanding LCME vocal coaching. My results were better than expected.' },
-  { name: 'Liam Kamau', role: 'Trumpet – Grade 7', content: 'Professional guidance and perfect exam prep — highly recommended.' },
+const fallbackTestimonials = [
+  { id: '1', studentName: 'Aisha Mwangi', content: 'Passed my ABRSM Grade 5 with distinction — the focused syllabus teaching really works!', rating: 5 },
+  { id: '2', studentName: 'Ethan Otieno', content: 'From beginner to Grade 4 in under two years. The quarterly performances changed everything.', rating: 5 },
+  { id: '3', studentName: 'Zara Khan', content: 'Outstanding LCME vocal coaching. My results were better than expected.', rating: 5 },
+  { id: '4', studentName: 'Liam Kamau', content: 'Professional guidance and perfect exam prep — highly recommended.', rating: 5 },
 ]
 
 const brands = ['YAMAHA', 'STEINWAY', 'FENDER', 'PEARL', 'SHURE', 'SELMER']
@@ -71,7 +71,39 @@ const CountUp = ({ end, duration = 2.5, suffix = '' }: { end: number; duration?:
   return <span ref={ref}>{count}{suffix}</span>
 }
 
+const fallbackInstruments = [
+  { id: '1', name: 'Piano', image: '/images/instruments/Piano.jpg' },
+  { id: '2', name: 'Guitar', image: '/images/instruments/Guitar.jpg' },
+  { id: '3', name: 'Drums', image: '/images/instruments/Drumset.jpg' },
+  { id: '4', name: 'Violin', image: '/images/instruments/Violin.jpg' },
+  { id: '5', name: 'Trumpet', image: '/images/instruments/Trumpet.jpg' },
+  { id: '6', name: 'Voice', image: '/images/instruments/Vocals.jpg' },
+]
+
 export default function HomePage() {
+  const [testimonials, setTestimonials] = useState(fallbackTestimonials)
+  const [instruments, setInstruments] = useState(fallbackInstruments)
+
+  useEffect(() => {
+    fetch('/api/testimonials')
+      .then(res => res.json())
+      .then(data => {
+        if (data.testimonials?.length > 0) {
+          setTestimonials(data.testimonials.slice(0, 4))
+        }
+      })
+      .catch(() => {})
+
+    fetch('/api/instruments')
+      .then(res => res.json())
+      .then(data => {
+        if (data.instruments?.length > 0) {
+          setInstruments(data.instruments.slice(0, 6))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <main className="min-h-screen">
       <Header />
@@ -115,14 +147,13 @@ export default function HomePage() {
           ))}
         </div>
 
-        <div className="container mx-auto px-4 lg:px-8 relative z-10 py-24 md:py-0">
+        <div className="container mx-auto px-4 lg:px-8 relative z-10 pt-32 md:pt-40 pb-24">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: "easeOut" }}
-            className="grid lg:grid-cols-2 gap-12 items-center"
           >
-            <div className="max-w-2xl">
+            <div className="w-full text-center flex flex-col items-center">
               <h1 className="text-5xl md:text-7xl font-bold font-display text-white mb-6 leading-tight">
                 MUSIC<br />
                 <span className="text-coral-500">EXCELLENCE</span>
@@ -143,9 +174,9 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 mt-12 pt-10 border-t border-white/10">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-10 mt-12 pt-10 border-t border-white/10 justify-items-center w-full">
                 {stats.map((stat) => (
-                  <div key={stat.label} className="text-center md:text-left">
+                  <div key={stat.label} className="text-center">
                     <div className="text-4xl md:text-5xl font-bold text-coral-400 mb-1">
                       {stat.value.match(/^\d+$/) ? (
                         <CountUp end={parseInt(stat.value)} suffix={stat.suffix || ''} />
@@ -299,27 +330,26 @@ export default function HomePage() {
     </div>
 
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-      {[
-        { name: 'Piano', image: '/images/instruments/Piano.jpg' },
-        { name: 'Guitar', image: '/images/instruments/Guitar.jpg' },
-        { name: 'Drums', image: '/images/instruments/Drumset.jpg' },
-        { name: 'Violin', image: '/images/instruments/Violin.jpg' },
-        { name: 'Trumpet', image: '/images/instruments/Trumpet.jpg' },
-        { name: 'Voice', image: '/images/instruments/Vocals.jpg' },
-      ].map((instrument) => (
-        <Link key={instrument.name} href={`/lessons/${instrument.name.toLowerCase()}`}>
+      {instruments.map((instrument) => (
+        <Link key={instrument.id} href={`/lessons/${instrument.name.toLowerCase()}`}>
           <motion.div
             whileHover={{ scale: 1.08 }}
             transition={{ duration: 0.3 }}
             className="group"
           >
-            <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
-              <Image
-                src={instrument.image}
-                alt={instrument.name}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-              />
+            <div className="relative aspect-square rounded-xl overflow-hidden mb-3 bg-charcoal-100">
+              {instrument.image ? (
+                <Image
+                  src={instrument.image}
+                  alt={instrument.name}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-4xl">
+                  🎵
+                </div>
+              )}
             </div>
             <p className="text-center font-medium text-charcoal-900 group-hover:text-coral-600 transition-colors">
               {instrument.name}
@@ -349,7 +379,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {testimonials.map((t, i) => (
               <motion.div
-                key={i}
+                key={t.id}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -358,13 +388,12 @@ export default function HomePage() {
                 <Card className="border-none shadow-md hover:shadow-xl transition-all">
                   <CardContent className="p-6">
                     <div className="flex gap-1 mb-4">
-                      {Array(5).fill(0).map((_, idx) => (
+                      {Array(t.rating).fill(0).map((_, idx) => (
                         <Star key={idx} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
                     <p className="text-charcoal-700 mb-6 italic">"{t.content}"</p>
-                    <p className="font-bold text-charcoal-900">{t.name}</p>
-                    <p className="text-sm text-charcoal-500">{t.role}</p>
+                    <p className="font-bold text-charcoal-900">{t.studentName}</p>
                   </CardContent>
                 </Card>
               </motion.div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession, hashPassword } from '@/lib/auth'
-import { sendWelcomeEmail } from '@/lib/email'
+import { sendWelcomeEmailWithCredentials } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +11,7 @@ interface CreateStudentInput {
   email: string
   phone?: string
   password?: string
+  sendCredentials?: boolean
 }
 
 export async function GET(req: NextRequest) {
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body: CreateStudentInput = await req.json()
-    const { firstName, lastName, email, phone, password } = body
+    const { firstName, lastName, email, phone, password, sendCredentials = true } = body
 
     if (!firstName || !lastName || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -76,8 +77,14 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Send welcome email
-    sendWelcomeEmail({ email: student.email, firstName: student.firstName }).catch(console.error)
+    // Send welcome email with credentials if requested
+    if (sendCredentials) {
+      sendWelcomeEmailWithCredentials({
+        email: student.email,
+        firstName: student.firstName,
+        password: generatedPassword,
+      }).catch(console.error)
+    }
 
     return NextResponse.json({ success: true, student, temporaryPassword: generatedPassword })
   } catch (error) {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Users, Search, Plus, Mail, Phone, MoreVertical, Edit, Trash2, Eye } from 'lucide-react'
+import { Users, Search, Plus, Mail, Phone, MoreVertical, Edit, UserX, UserCheck, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -31,7 +31,7 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
 
   useEffect(() => { fetchStudents() }, [])
 
@@ -44,16 +44,29 @@ export default function StudentsPage() {
     finally { setLoading(false) }
   }
 
-  const handleDelete = async () => {
+  const handleDeactivate = async () => {
     if (!selectedStudent) return
     try {
       const res = await fetch(`/api/admin/students/${selectedStudent.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete')
-      setStudents(students.filter(s => s.id !== selectedStudent.id))
-      toast.success('Student deleted successfully')
-      setShowDeleteDialog(false)
+      if (!res.ok) throw new Error('Failed to deactivate')
+      setStudents(students.map(s => s.id === selectedStudent.id ? { ...s, isActive: false } : s))
+      toast.success('Student deactivated successfully')
+      setShowDeactivateDialog(false)
       setSelectedStudent(null)
-    } catch (error) { toast.error('Failed to delete student') }
+    } catch (error) { toast.error('Failed to deactivate student') }
+  }
+
+  const handleReactivate = async (student: Student) => {
+    try {
+      const res = await fetch(`/api/admin/students/${student.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: true }),
+      })
+      if (!res.ok) throw new Error('Failed to reactivate')
+      setStudents(students.map(s => s.id === student.id ? { ...s, isActive: true } : s))
+      toast.success('Student reactivated successfully')
+    } catch (error) { toast.error('Failed to reactivate student') }
   }
 
   const filteredStudents = students.filter(s =>
@@ -132,7 +145,11 @@ export default function StudentsPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild><Link href={`/admin/students/${student.id}`} className="flex items-center gap-2"><Eye className="w-4 h-4" />View Details</Link></DropdownMenuItem>
                             <DropdownMenuItem asChild><Link href={`/admin/students/${student.id}/edit`} className="flex items-center gap-2"><Edit className="w-4 h-4" />Edit</Link></DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setSelectedStudent(student); setShowDeleteDialog(true) }} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Delete</DropdownMenuItem>
+                            {student.isActive ? (
+                              <DropdownMenuItem onClick={() => { setSelectedStudent(student); setShowDeactivateDialog(true) }} className="text-red-600"><UserX className="w-4 h-4 mr-2" />Deactivate</DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => handleReactivate(student)} className="text-green-600"><UserCheck className="w-4 h-4 mr-2" />Reactivate</DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -145,14 +162,14 @@ export default function StudentsPage() {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      {/* Deactivate Confirmation Dialog */}
+      <Dialog open={showDeactivateDialog} onOpenChange={setShowDeactivateDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Delete Student</DialogTitle></DialogHeader>
-          <p className="text-charcoal-500">Are you sure you want to delete <strong>{selectedStudent?.firstName} {selectedStudent?.lastName}</strong>? This action cannot be undone.</p>
+          <DialogHeader><DialogTitle>Deactivate Student</DialogTitle></DialogHeader>
+          <p className="text-charcoal-500">Are you sure you want to deactivate <strong>{selectedStudent?.firstName} {selectedStudent?.lastName}</strong>? They will no longer be able to log in but their data will be preserved.</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setShowDeactivateDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeactivate}>Deactivate</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

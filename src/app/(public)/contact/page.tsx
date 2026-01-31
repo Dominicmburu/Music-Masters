@@ -31,13 +31,26 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    toast.success('Message sent successfully! We\'ll get back to you soon.')
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
-    setLoading(false)
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (res.ok) {
+        toast.success('Message sent successfully! We\'ll get back to you soon.')
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Failed to send message')
+      }
+    } catch (error) {
+      toast.error('Failed to send message. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -146,13 +159,18 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Map Placeholder */}
-      <section className="h-[400px] bg-charcoal-200 flex items-center justify-center">
-        <div className="text-center">
-          <MapPin className="w-16 h-16 text-charcoal-400 mx-auto mb-4" />
-          <p className="text-charcoal-500">Westlands, Nairobi, Kenya</p>
-          <p className="text-charcoal-400 text-sm mt-2">Interactive map would be displayed here</p>
-        </div>
+      {/* Map */}
+      <section className="h-[400px] bg-charcoal-200">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.7952082877!2d36.8219!3d-1.2921!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f10d22f42c1f5%3A0x6f9c7c8c8c8c8c8c!2sJem%20Park%2C%20Sabaki%2C%20Kenya!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title="Musical Masters Location - Jem Park, Sabaki, Kenya"
+        />
       </section>
 
       <Footer />
