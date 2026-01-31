@@ -18,7 +18,7 @@ export async function POST(
     const sharedRecording = await prisma.sharedRecording.findFirst({
       where: {
         id,
-        userId: session.id,
+        userId: session.userId,
       },
     })
 

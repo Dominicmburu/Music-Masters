@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import nodemailer from 'nodemailer'
-import { generateUnsubscribeToken } from '@/app/api/newsletter/unsubscribe/route'
+import { generateUnsubscribeToken } from '@/lib/newsletter'
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
