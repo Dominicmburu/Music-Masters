@@ -103,28 +103,28 @@ export function Header() {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-3">
+              {/* Cart Icon - Always visible */}
+              <Link
+                href="/shop/cart"
+                className={cn(
+                  'relative p-2 rounded-lg transition-colors',
+                  isScrolled || !isHomePage
+                    ? 'text-charcoal-600 hover:text-coral-500 hover:bg-charcoal-50'
+                    : 'text-white/90 hover:text-white hover:bg-white/10'
+                )}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-coral-500 rounded-full text-xs text-white flex items-center justify-center font-medium">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </Link>
+
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-charcoal-200 animate-pulse" />
               ) : user ? (
                 <>
-                  {/* Cart Icon */}
-                  <Link
-                    href="/shop/cart"
-                    className={cn(
-                      'relative p-2 rounded-lg transition-colors',
-                      isScrolled || !isHomePage
-                        ? 'text-charcoal-600 hover:text-coral-500 hover:bg-charcoal-50'
-                        : 'text-white/90 hover:text-white hover:bg-white/10'
-                    )}
-                  >
-                    <ShoppingCart className="w-5 h-5" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-coral-500 rounded-full text-xs text-white flex items-center justify-center font-medium">
-                        {cartCount > 9 ? '9+' : cartCount}
-                      </span>
-                    )}
-                  </Link>
-
                   {/* User Avatar & Name */}
                   <div className={cn(
                     'flex items-center gap-2 px-2',
@@ -136,7 +136,6 @@ export function Header() {
                         {getInitials(user.firstName, user.lastName)}
                       </AvatarFallback>
                     </Avatar>
-                    {/* <span className="text-sm font-medium">{user.firstName}</span> */}
                   </div>
 
                   {/* Dashboard Button */}
@@ -222,10 +221,10 @@ export function Header() {
               className="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl"
             >
               <div className="p-6 pt-24">
-                {/* User Info (Mobile) */}
-                {user && (
-                  <div className="mb-6 pb-6 border-b border-charcoal-100">
-                    <div className="flex items-center gap-3">
+                {/* Cart Link (Always visible on mobile) */}
+                <div className="mb-6 pb-6 border-b border-charcoal-100">
+                  {user && (
+                    <div className="flex items-center gap-3 mb-4">
                       <Avatar className="w-12 h-12">
                         <AvatarImage src={user.avatar} />
                         <AvatarFallback className="bg-coral-500 text-white">
@@ -239,7 +238,9 @@ export function Header() {
                         <p className="text-sm text-charcoal-500">{user.email}</p>
                       </div>
                     </div>
-                    <div className="mt-4 flex gap-2">
+                  )}
+                  <div className="flex gap-2">
+                    {user && (
                       <Link
                         href={getDashboardLink()}
                         onClick={() => setIsMobileMenuOpen(false)}
@@ -250,23 +251,24 @@ export function Header() {
                           Dashboard
                         </Button>
                       </Link>
-                      <Link
-                        href="/shop/cart"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="relative"
-                      >
-                        <Button variant="outline" size="sm">
-                          <ShoppingCart className="w-4 h-4" />
-                          {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-coral-500 rounded-full text-xs text-white flex items-center justify-center">
-                              {cartCount > 9 ? '9+' : cartCount}
-                            </span>
-                          )}
-                        </Button>
-                      </Link>
-                    </div>
+                    )}
+                    <Link
+                      href="/shop/cart"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="relative"
+                    >
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <ShoppingCart className="w-4 h-4" />
+                        Cart
+                        {cartCount > 0 && (
+                          <span className="ml-1 w-5 h-5 bg-coral-500 rounded-full text-xs text-white flex items-center justify-center">
+                            {cartCount > 9 ? '9+' : cartCount}
+                          </span>
+                        )}
+                      </Button>
+                    </Link>
                   </div>
-                )}
+                </div>
 
                 <div className="flex flex-col gap-2">
                   {navLinks.map((link, index) => (

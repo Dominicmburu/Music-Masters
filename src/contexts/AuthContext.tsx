@@ -48,10 +48,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Helper functions for local storage cart
+const getLocalCart = (): LocalCartItem[] => {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(LOCAL_CART_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+const setLocalCart = (items: LocalCartItem[]) => {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(items))
+}
+
+const clearLocalCart = () => {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(LOCAL_CART_KEY)
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [localCartItems, setLocalCartItems] = useState<LocalCartItem[]>([])
 
   const refreshUser = useCallback(async () => {
     try {
@@ -71,7 +93,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshCart = useCallback(async () => {
     if (!user) {
-      setCartItems([])
+      // Load from localStorage for non-logged-in users
+      const localItems = getLocalCart()
+      setLocalCartItems(localItems)
+
+      // Fetch product details for local cart items
+      if (localItems.length > 0) {
+        try {
+          const productIds = localItems.map(item => item.productId)
+          const res = await fetch(`/api/products?ids=${productIds.join(',')}`)
+          if (res.ok) {
+            const data = await res.json()
+            const products = data.products || []
+            const cartWithProducts: CartItem[] = localItems.map((item, index) => {
+              const product = products.find((p: any) => p.id === item.productId)
+              return {
+                id: `local-${index}`,
+                productId: item.productId,
+                quantity: item.quantity,
+                product: product ? {
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  image: product.image,
+                } : {
+                  id: item.productId,
+                  name: 'Product',
+                  price: 0,
+                  image: '',
+                }
+              }
+            }).filter(item => item.product.price > 0)
+            setCartItems(cartWithProducts)
+          }
+        } catch {
+          setCartItems([])
+        }
+      } else {
+        setCartItems([])
+      }
       return
     }
     try {
@@ -86,7 +146,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   const addToCart = useCallback(async (productId: string, quantity: number = 1): Promise<boolean> => {
-    if (!user) return false
+    if (!user) {
+      // Handle local cart for non-logged-in users
+      const localItems = getLocalCart()
+      const existingIndex = localItems.findIndex(item => item.productId === productId)
+
+      if (existingIndex >= 0) {
+        localItems[existingIndex].quantity += quantity
+      } else {
+        localItems.push({ productId, quantity })
+      }
+
+      setLocalCart(localItems)
+      await refreshCart()
+      return true
+    }
     try {
       const res = await fetch('/api/cart/items', {
         method: 'POST',
@@ -104,7 +178,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, refreshCart])
 
   const updateCartItem = useCallback(async (itemId: string, quantity: number): Promise<boolean> => {
-    if (!user) return false
+    if (!user) {
+      // Handle local cart for non-logged-in users
+      // itemId format is "local-{index}" or productId
+      const localItems = getLocalCart()
+      const cartItem = cartItems.find(item => item.id === itemId)
+      if (cartItem) {
+        const itemIndex = localItems.findIndex(item => item.productId === cartItem.productId)
+        if (itemIndex >= 0) {
+          if (quantity <= 0) {
+            localItems.splice(itemIndex, 1)
+          } else {
+            localItems[itemIndex].quantity = quantity
+          }
+          setLocalCart(localItems)
+          await refreshCart()
+          return true
+        }
+      }
+      return false
+    }
     try {
       const res = await fetch(`/api/cart/items/${itemId}`, {
         method: 'PATCH',
@@ -119,10 +212,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       return false
     }
-  }, [user, refreshCart])
+  }, [user, refreshCart, cartItems])
 
   const removeFromCart = useCallback(async (itemId: string): Promise<boolean> => {
-    if (!user) return false
+    if (!user) {
+      // Handle local cart for non-logged-in users
+      const localItems = getLocalCart()
+      const cartItem = cartItems.find(item => item.id === itemId)
+      if (cartItem) {
+        const itemIndex = localItems.findIndex(item => item.productId === cartItem.productId)
+        if (itemIndex >= 0) {
+          localItems.splice(itemIndex, 1)
+          setLocalCart(localItems)
+          await refreshCart()
+          return true
+        }
+      }
+      return false
+    }
     try {
       const res = await fetch(`/api/cart/items/${itemId}`, {
         method: 'DELETE',
@@ -135,10 +242,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       return false
     }
-  }, [user, refreshCart])
+  }, [user, refreshCart, cartItems])
 
   const clearCart = useCallback(async (): Promise<boolean> => {
-    if (!user) return false
+    if (!user) {
+      // Clear local cart for non-logged-in users
+      clearLocalCart()
+      setLocalCartItems([])
+      setCartItems([])
+      return true
+    }
     try {
       const res = await fetch('/api/cart', {
         method: 'DELETE',
@@ -168,14 +281,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshUser()
   }, [refreshUser])
 
-  // Refresh cart when user changes
+  // Refresh cart when user changes or on initial load
   useEffect(() => {
-    if (user) {
-      refreshCart()
-    } else {
-      setCartItems([])
-    }
+    refreshCart()
   }, [user, refreshCart])
+
+  // Load local cart on mount for non-logged-in users
+  useEffect(() => {
+    if (!loading && !user) {
+      const localItems = getLocalCart()
+      setLocalCartItems(localItems)
+    }
+  }, [loading, user])
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 

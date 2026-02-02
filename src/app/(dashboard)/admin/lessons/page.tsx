@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { BookOpen, Plus, Search, Edit, Trash2, Clock, ToggleLeft, ToggleRight, Loader2, X } from 'lucide-react'
+import { BookOpen, Plus, Search, Edit, Trash2, Clock, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatCurrency } from '@/lib/utils'
@@ -49,17 +48,12 @@ const LESSON_TYPES = [
   { value: 'ONLINE', label: 'Online Lesson' },
 ]
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
 export default function LessonsPage() {
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [instruments, setInstruments] = useState<Instrument[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterInstrument, setFilterInstrument] = useState('all')
-  const [timeSlotsOpen, setTimeSlotsOpen] = useState(false)
-  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
-  const [newSlot, setNewSlot] = useState({ dayOfWeek: '1', startTime: '09:00', endTime: '10:00' })
 
   useEffect(() => {
     fetchData()
@@ -82,11 +76,6 @@ export default function LessonsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const openTimeSlots = (lesson: Lesson) => {
-    setSelectedLesson(lesson)
-    setTimeSlotsOpen(true)
   }
 
   const toggleActive = async (lesson: Lesson) => {
@@ -122,53 +111,6 @@ export default function LessonsPage() {
       }
     } catch (error) {
       toast.error('Failed to delete lesson')
-    }
-  }
-
-  const addTimeSlot = async () => {
-    if (!selectedLesson) return
-
-    try {
-      const res = await fetch(`/api/admin/lessons/${selectedLesson.id}/timeslots`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSlot),
-      })
-
-      if (res.ok) {
-        toast.success('Time slot added')
-        fetchData()
-        // Update selected lesson
-        const slotsRes = await fetch(`/api/admin/lessons/${selectedLesson.id}/timeslots`)
-        const slotsData = await slotsRes.json()
-        setSelectedLesson({ ...selectedLesson, timeSlots: slotsData.timeSlots })
-      } else {
-        const data = await res.json()
-        toast.error(data.error || 'Failed to add slot')
-      }
-    } catch (error) {
-      toast.error('Failed to add time slot')
-    }
-  }
-
-  const deleteTimeSlot = async (slotId: string) => {
-    if (!selectedLesson) return
-
-    try {
-      const res = await fetch(`/api/admin/lessons/${selectedLesson.id}/timeslots?slotId=${slotId}`, {
-        method: 'DELETE',
-      })
-
-      if (res.ok) {
-        toast.success('Time slot removed')
-        setSelectedLesson({
-          ...selectedLesson,
-          timeSlots: selectedLesson.timeSlots.filter(s => s.id !== slotId),
-        })
-        fetchData()
-      }
-    } catch (error) {
-      toast.error('Failed to delete slot')
     }
   }
 
@@ -280,15 +222,12 @@ export default function LessonsPage() {
                       <TableCell>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openTimeSlots(lesson)}
-                              className="gap-1"
-                            >
-                              <Clock className="w-3 h-3" />
-                              {lesson.timeSlots.length} slots
-                            </Button>
+                            <Link href={`/admin/lessons/${lesson.id}/timeslots`}>
+                              <Button variant="outline" size="sm" className="gap-1">
+                                <Clock className="w-3 h-3" />
+                                {lesson.timeSlots.length} slots
+                              </Button>
+                            </Link>
                           </TooltipTrigger>
                           <TooltipContent>Manage Time Slots</TooltipContent>
                         </Tooltip>
@@ -346,89 +285,6 @@ export default function LessonsPage() {
             )}
           </CardContent>
         </Card>
-
-        {/* Time Slots Dialog */}
-        <Dialog open={timeSlotsOpen} onOpenChange={setTimeSlotsOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Time Slots - {selectedLesson?.title}</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              {/* Add New Slot */}
-              <div className="p-4 bg-charcoal-50 rounded-lg space-y-3">
-                <p className="text-sm font-medium">Add New Slot</p>
-                <div className="grid grid-cols-3 gap-2">
-                  <select
-                    value={newSlot.dayOfWeek}
-                    onChange={(e) => setNewSlot({ ...newSlot, dayOfWeek: e.target.value })}
-                    className="h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    {DAYS.map((day, i) => (
-                      <option key={i} value={i.toString()}>{day}</option>
-                    ))}
-                  </select>
-                  <Input
-                    type="time"
-                    value={newSlot.startTime}
-                    onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
-                  />
-                  <Input
-                    type="time"
-                    value={newSlot.endTime}
-                    onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
-                  />
-                </div>
-                <Button size="sm" onClick={addTimeSlot} className="w-full">
-                  <Plus className="w-4 h-4 mr-1" /> Add Slot
-                </Button>
-              </div>
-
-              {/* Existing Slots */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Current Slots</p>
-                {selectedLesson?.timeSlots.length === 0 ? (
-                  <p className="text-sm text-charcoal-500 text-center py-4">No time slots configured</p>
-                ) : (
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {selectedLesson?.timeSlots.map((slot) => (
-                      <div
-                        key={slot.id}
-                        className="flex items-center justify-between p-3 bg-white border rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Badge variant={slot.isActive ? 'success' : 'secondary'}>
-                            {DAYS[slot.dayOfWeek]}
-                          </Badge>
-                          <span className="text-sm">
-                            {slot.startTime} - {slot.endTime}
-                          </span>
-                        </div>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteTimeSlot(slot.id)}
-                              className="text-red-600 h-8 w-8 p-0"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Remove Slot</TooltipContent>
-                        </Tooltip>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setTimeSlotsOpen(false)}>Close</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </TooltipProvider>
   )

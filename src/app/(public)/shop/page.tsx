@@ -322,7 +322,7 @@ function ProductCard({
               KSh {product.price.toLocaleString()}
             </div>
             <div className="flex gap-2">
-              {user ? (
+              {/* {user ? (
                 <Button
                   className="flex-1 gap-2"
                   onClick={() => onAddToCart(product)}
@@ -342,7 +342,7 @@ function ProductCard({
                     Login to Buy
                   </Button>
                 </Link>
-              )}
+              )} */}
               <Button
                 variant="outline"
                 className="gap-2 border-green-500 text-green-600 hover:bg-green-50"

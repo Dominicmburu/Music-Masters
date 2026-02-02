@@ -1,15 +1,30 @@
 import nodemailer from 'nodemailer'
 import { format } from 'date-fns'
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-})
+// Create transporter lazily to ensure environment variables are loaded
+let transporter: nodemailer.Transporter | null = null
+
+function getTransporter() {
+  if (!transporter) {
+    const smtpUser = process.env.SMTP_USER
+    const smtpPassword = process.env.SMTP_PASSWORD
+
+    if (!smtpUser || !smtpPassword) {
+      console.warn('Email credentials not configured. SMTP_USER and SMTP_PASSWORD are required.')
+    }
+
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false,
+      auth: smtpUser && smtpPassword ? {
+        user: smtpUser,
+        pass: smtpPassword,
+      } : undefined,
+    })
+  }
+  return transporter
+}
 
 interface EmailOptions {
   to: string
@@ -19,7 +34,8 @@ interface EmailOptions {
 
 export async function sendEmail({ to, subject, html }: EmailOptions) {
   try {
-    await transporter.sendMail({
+    const mailer = getTransporter()
+    await mailer.sendMail({
       from: process.env.EMAIL_FROM || 'Musical Masters <noreply@musicalmasters.com>',
       to,
       subject,
