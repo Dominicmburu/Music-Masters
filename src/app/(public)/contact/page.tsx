@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import toast from 'react-hot-toast'
 
 const contactInfo = [
-  { icon: MapPin, title: 'Visit Us', details: ['Jem Park', 'Sabaki', 'Kenya'] },
+  { icon: MapPin, title: 'Visit Us', details: ['Jem Park', 'Sabaki', 'Mombasa Road', 'Kenya'] },
   { icon: Phone, title: 'Call Us', details: ['+254 784 177 547', '+254 733 456 789'] },
   { icon: Mail, title: 'Email Us', details: ['info@musicalmasters.com', 'bookings@musicalmasters.com'] },
   { icon: Clock, title: 'Working Hours', details: ['During the term: Saturday and Sunday at clients discretion', 'April, August, November & December all throughout the week'] },

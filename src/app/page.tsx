@@ -72,12 +72,13 @@ const CountUp = ({ end, duration = 2.5, suffix = '' }: { end: number; duration?:
 }
 
 const fallbackInstruments = [
-  { id: '1', name: 'Piano', image: '/images/instruments/Piano.jpg' },
-  { id: '2', name: 'Guitar', image: '/images/instruments/Guitar.jpg' },
-  { id: '3', name: 'Drums', image: '/images/instruments/Drumset.jpg' },
-  { id: '4', name: 'Violin', image: '/images/instruments/Violin.jpg' },
-  { id: '5', name: 'Trumpet', image: '/images/instruments/Trumpet.jpg' },
-  { id: '6', name: 'Voice', image: '/images/instruments/Vocals.jpg' },
+  { id: '1', name: 'Piano', image: '/images/instruments/Piano.jpg', description: 'Comprehensive preparation for ABRSM & LCME exams — from Step/Initial to Grade 8' },
+  { id: '2', name: 'Guitar', image: '/images/instruments/Guitar.jpg', description: 'Acoustic, electric & bass guitar lessons following ABRSM & LCME syllabuses' },
+  { id: '3', name: 'Drums', image: '/images/instruments/Drumset.jpg', description: 'Drum kit training with focus on graded exams (ABRSM & LCME)' },
+  { id: '4', name: 'Violin', image: '/images/instruments/Violin.jpg', description: 'Classical violin instruction aligned with ABRSM & LCME requirements' },
+  { id: '5', name: 'Trumpet', image: '/images/instruments/Trumpet.jpg', description: 'Brass training for ABRSM & LCME graded exams and performances' },
+  { id: '6', name: 'Vocals', image: '/images/instruments/Vocals.jpg', description: 'Singing & vocal technique — ABRSM & LCME syllabus for all levels' },
+  { id: '7', name: 'Saxophone', image: '/images/instruments/Saxophone.jpg', description: 'Woodwind saxophone lessons preparing for ABRSM & LCME graded exams' },
 ]
 
 export default function HomePage() {
@@ -98,7 +99,18 @@ export default function HomePage() {
       .then(res => res.json())
       .then(data => {
         if (data.instruments?.length > 0) {
-          setInstruments(data.instruments.slice(0, 6))
+          // Merge API data with fallback descriptions and images
+          const mergedInstruments = data.instruments.slice(0, 6).map((apiInstrument: any) => {
+            const fallbackMatch = fallbackInstruments.find(
+              fb => fb.name.toLowerCase() === apiInstrument.name.toLowerCase()
+            )
+            return {
+              ...apiInstrument,
+              image: apiInstrument.image || fallbackMatch?.image || '',
+              description: fallbackMatch?.description || apiInstrument.description || ''
+            }
+          })
+          setInstruments(mergedInstruments)
         }
       })
       .catch(() => {})
@@ -325,37 +337,50 @@ export default function HomePage() {
         Instruments
       </span>
       <h2 className="text-4xl font-bold font-display text-charcoal-900 mt-3">
-        What We Teach
+        Instruments We Teach
       </h2>
+      <p className="text-lg text-charcoal-600 mt-4 max-w-3xl mx-auto">
+        All lessons follow the official ABRSM and LCME syllabuses, ensuring structured progression toward graded exams and performance excellence.
+      </p>
     </div>
 
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-      {instruments.map((instrument) => (
-        <Link key={instrument.id} href={`/lessons/${instrument.name.toLowerCase()}`}>
-          <motion.div
-            whileHover={{ scale: 1.08 }}
-            transition={{ duration: 0.3 }}
-            className="group"
-          >
-            <div className="relative aspect-square rounded-xl overflow-hidden mb-3 bg-charcoal-100">
-              {instrument.image ? (
-                <Image
-                  src={instrument.image}
-                  alt={instrument.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl">
-                  🎵
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {instruments.map((instrument, i) => (
+        <motion.div
+          key={instrument.id}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: i * 0.1 }}
+        >
+          <Link href="/lessons">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-start gap-4">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform mx-auto sm:mx-0 bg-charcoal-100">
+                    {instrument.image ? (
+                      <Image 
+                        src={instrument.image} 
+                        alt={instrument.name}
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-charcoal-400">
+                        <Music className="w-12 h-12" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="text-xl font-bold text-charcoal-900 mb-2">{instrument.name}</h3>
+                    <p className="text-charcoal-600 text-sm mb-3">{instrument.description}</p>
+                  </div>
                 </div>
-              )}
-            </div>
-            <p className="text-center font-medium text-charcoal-900 group-hover:text-coral-600 transition-colors">
-              {instrument.name}
-            </p>
-          </motion.div>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        </motion.div>
       ))}
     </div>
 
@@ -369,7 +394,7 @@ export default function HomePage() {
   </div>
 </section>
 
-      {/* Testimonials */}
+      {/* Testimonials */}                        
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-16">
