@@ -5,6 +5,7 @@ import { getSession } from '@/lib/auth'
 export const dynamic = 'force-dynamic'
 
 interface SharedRecordingWithDetails {
+  id: string
   sharedAt: Date
   viewedAt: Date | null
   message: string | null
@@ -46,7 +47,8 @@ export async function GET(req: NextRequest) {
     })
 
     const recordings = sharedRecordings.map((sr: SharedRecordingWithDetails) => ({
-      id: sr.recording.id,
+      id: sr.id, // SharedRecording id for view tracking
+      recordingId: sr.recording.id,
       title: sr.recording.title,
       description: sr.recording.description,
       youtubeUrl: sr.recording.youtubeUrl,

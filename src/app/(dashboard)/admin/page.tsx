@@ -73,7 +73,7 @@ export default function AdminDashboard() {
           <p className="text-charcoal-500 mt-1">Welcome back! Here's your studio overview</p>
         </div>
         <div className="flex gap-3">
-          <Link href="/admin/bookings/new"><Button variant="outline">Add Booking</Button></Link>
+          {/* <Link href="/admin/bookings/new"><Button variant="outline">Add Booking</Button></Link> */}
           <Link href="/admin/students/new"><Button>Add Student</Button></Link>
         </div>
       </motion.div>
@@ -145,9 +145,9 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/admin/bookings/new" className="block">
+              {/* <Link href="/admin/bookings/new" className="block">
                 <Button variant="outline" className="w-full justify-start gap-3"><Calendar className="w-5 h-5 text-coral-500" />Create Booking</Button>
-              </Link>
+              </Link> */}
               <Link href="/admin/students/new" className="block">
                 <Button variant="outline" className="w-full justify-start gap-3"><Users className="w-5 h-5 text-blue-500" />Add New Student</Button>
               </Link>

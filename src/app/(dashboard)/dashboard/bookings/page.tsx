@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Calendar, Clock, Music, AlertCircle, CheckCircle, XCircle, MoreVertical } from 'lucide-react'
+import { Calendar, Clock, Music, AlertCircle, CheckCircle, XCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDate, formatTime, formatCurrency, getInstrumentEmoji } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
@@ -27,9 +26,6 @@ interface Booking {
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
-  const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const [cancelling, setCancelling] = useState(false)
 
   useEffect(() => { fetchBookings() }, [])
 
@@ -42,17 +38,16 @@ export default function BookingsPage() {
     finally { setLoading(false) }
   }
 
-  const handleCancel = async () => {
-    if (!selectedBooking) return
-    setCancelling(true)
+  const handleCancel = async (booking: Booking) => {
+    const confirmMsg = `Are you sure you want to cancel your "${booking.lesson.title}" lesson on ${formatDate(booking.scheduledDate, 'MMMM d, yyyy')}?\n\nNote: Cancellations must be made at least 24 hours before the lesson.`
+    if (!confirm(confirmMsg)) return
+
     try {
-      const res = await fetch(`/api/bookings/${selectedBooking.id}/cancel`, { method: 'POST' })
+      const res = await fetch(`/api/bookings/${booking.id}/cancel`, { method: 'POST' })
       if (!res.ok) throw new Error('Failed to cancel')
-      setBookings(bookings.map(b => b.id === selectedBooking.id ? { ...b, status: 'CANCELLED' } : b))
+      setBookings(bookings.map(b => b.id === booking.id ? { ...b, status: 'CANCELLED' } : b))
       toast.success('Booking cancelled successfully')
-      setShowCancelDialog(false)
     } catch (error) { toast.error('Failed to cancel booking') }
-    finally { setCancelling(false) }
   }
 
   const getStatusBadge = (status: string) => {
@@ -87,17 +82,25 @@ export default function BookingsPage() {
         <p className="text-sm font-medium text-charcoal-900 mt-1">{formatCurrency(booking.lesson.price)}</p>
       </div>
       {['PENDING', 'CONFIRMED'].includes(booking.status) && new Date(booking.scheduledDate) >= new Date() && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical className="w-5 h-5" /></Button></DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => { setSelectedBooking(booking); setShowCancelDialog(true) }} className="text-red-600">Cancel Booking</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleCancel(booking)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Cancel Booking</TooltipContent>
+        </Tooltip>
       )}
     </div>
   )
 
   return (
+    <TooltipProvider>
     <div className="space-y-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
@@ -145,19 +148,7 @@ export default function BookingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Cancel Dialog */}
-      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Cancel Booking</DialogTitle></DialogHeader>
-          <p className="text-charcoal-500">Are you sure you want to cancel your <strong>{selectedBooking?.lesson.title}</strong> lesson on <strong>{selectedBooking && formatDate(selectedBooking.scheduledDate, 'MMMM d, yyyy')}</strong>?</p>
-          <p className="text-sm text-charcoal-400">Please note that cancellations must be made at least 24 hours before the lesson.</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCancelDialog(false)}>Keep Booking</Button>
-            <Button variant="destructive" onClick={handleCancel} loading={cancelling}>Cancel Booking</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
+    </TooltipProvider>
   )
 }

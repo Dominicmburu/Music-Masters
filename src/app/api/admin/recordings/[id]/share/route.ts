@@ -5,10 +5,6 @@ import { sendRecordingShared } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
-interface RouteParams {
-  params: { id: string }
-}
-
 interface ShareRecordingInput {
   studentIds: string[]
   message?: string
@@ -16,7 +12,7 @@ interface ShareRecordingInput {
 
 export async function POST(
   req: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession()
@@ -24,7 +20,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
     const body: ShareRecordingInput = await req.json()
     const { studentIds, message } = body
 
@@ -91,5 +87,51 @@ export async function POST(
   } catch (error) {
     console.error('Error sharing recording:', error)
     return NextResponse.json({ error: 'Failed to share recording' }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getSession()
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
+    const { searchParams } = new URL(req.url)
+    const studentId = searchParams.get('studentId')
+
+    const recording = await prisma.classRecording.findUnique({
+      where: { id },
+    })
+
+    if (!recording) {
+      return NextResponse.json({ error: 'Recording not found' }, { status: 404 })
+    }
+
+    if (studentId) {
+      // Unshare from specific student
+      await prisma.sharedRecording.delete({
+        where: {
+          recordingId_userId: {
+            recordingId: id,
+            userId: studentId,
+          },
+        },
+      })
+      return NextResponse.json({ message: 'Recording unshared from student' })
+    } else {
+      // Unshare from all students
+      const result = await prisma.sharedRecording.deleteMany({
+        where: { recordingId: id },
+      })
+      return NextResponse.json({ message: `Recording unshared from ${result.count} student(s)` })
+    }
+  } catch (error) {
+    console.error('Error unsharing recording:', error)
+    return NextResponse.json({ error: 'Failed to unshare recording' }, { status: 500 })
   }
 }

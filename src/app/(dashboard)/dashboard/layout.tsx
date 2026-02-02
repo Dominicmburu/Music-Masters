@@ -11,21 +11,16 @@ import {
   BookOpen,
   Video,
   User,
-  Settings,
   LogOut,
   Bell,
   Menu,
   X,
-  ChevronDown,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
@@ -237,13 +232,16 @@ function SidebarContent({
 }) {
   return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="p-6 flex items-center justify-between border-b border-charcoal-100">
+      {/* Header */}
+      <div className="p-6 flex items-center justify-between border-b border-charcoal-100 flex-shrink-0">
         <Link href="/dashboard" className="flex items-center gap-2" onClick={onClose}>
           <div className="w-10 h-10 bg-coral-500 rounded-xl flex items-center justify-center">
             <Music className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold font-display text-charcoal-900">MUSICAL MASTERS</span>
+          <div>
+            <span className="font-bold font-display text-charcoal-900 block">MUSICAL MASTERS</span>
+            <span className="text-xs text-charcoal-400">Student Portal</span>
+          </div>
         </Link>
         {onClose && (
           <button onClick={onClose} className="lg:hidden p-2 hover:bg-charcoal-100 rounded-lg">
@@ -252,8 +250,8 @@ function SidebarContent({
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      {/* Scrollable Navigation */}
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -262,8 +260,10 @@ function SidebarContent({
               href={item.href}
               onClick={onClose}
               className={cn(
-                'sidebar-link',
-                isActive && 'sidebar-link-active'
+                'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+                isActive
+                  ? 'bg-coral-500 text-white'
+                  : 'text-charcoal-600 hover:bg-charcoal-100 hover:text-charcoal-900'
               )}
             >
               <item.icon className="w-5 h-5" />
@@ -273,46 +273,36 @@ function SidebarContent({
         })}
       </nav>
 
-      {/* User Section */}
-      <div className="p-4 border-t border-charcoal-100">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-charcoal-50 transition-colors">
-              <Avatar>
-                <AvatarImage src={user.avatar} />
-                <AvatarFallback className="bg-coral-100 text-coral-600">
-                  {getInitials(user.firstName, user.lastName)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-charcoal-900">
-                  {user.firstName} {user.lastName}
-                </p>
-                <p className="text-xs text-charcoal-500">{user.email}</p>
-              </div>
-              <ChevronDown className="w-4 h-4 text-charcoal-400" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/profile" className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                My Profile
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/settings" className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Settings
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout} className="text-red-600">
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* Fixed Bottom Section */}
+      <div className="flex-shrink-0 border-t border-charcoal-100">
+        {/* Current User Info */}
+        <div className="p-4 border-b border-charcoal-100">
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarImage src={user.avatar} />
+              <AvatarFallback className="bg-coral-100 text-coral-600">
+                {getInitials(user.firstName, user.lastName)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-charcoal-900 truncate">
+                {user.firstName} {user.lastName}
+              </p>
+              <p className="text-xs text-charcoal-500 truncate">{user.email}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Logout Button */}
+        <div className="p-4">
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
     </div>
   )

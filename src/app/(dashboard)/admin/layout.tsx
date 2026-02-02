@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Music, Home, Calendar, Users, Video, Settings, LogOut, Bell, Menu, X, ChevronDown, BookOpen, DollarSign, BarChart3 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Music, Home, Calendar, Users, Video, Settings, LogOut, Menu, X, BookOpen, Package, FileText, Mail, MessageSquare, Quote, Clock } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { cn, getInitials } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -19,7 +17,14 @@ const adminNavItems = [
   { href: '/admin/calendar', icon: Calendar, label: 'Calendar' },
   { href: '/admin/bookings', icon: BookOpen, label: 'Bookings' },
   { href: '/admin/students', icon: Users, label: 'Students' },
+  { href: '/admin/instruments', icon: Music, label: 'Instruments' },
+  { href: '/admin/lessons', icon: Clock, label: 'Lessons' },
   { href: '/admin/recordings', icon: Video, label: 'Recordings' },
+  { href: '/admin/products', icon: Package, label: 'Products' },
+  { href: '/admin/blog', icon: FileText, label: 'Blog' },
+  { href: '/admin/testimonials', icon: Quote, label: 'Testimonials' },
+  { href: '/admin/newsletter', icon: Mail, label: 'Newsletter' },
+  { href: '/admin/enquiries', icon: MessageSquare, label: 'Enquiries' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
 
@@ -109,7 +114,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 function SidebarContent({ user, pathname, onClose, onLogout }: { user: User; pathname: string; onClose?: () => void; onLogout: () => void }) {
   return (
     <div className="flex flex-col h-full text-white">
-      <div className="p-6 flex items-center justify-between border-b border-charcoal-800">
+      {/* Header */}
+      <div className="p-6 flex items-center justify-between border-b border-charcoal-800 flex-shrink-0">
         <Link href="/admin" className="flex items-center gap-2" onClick={onClose}>
           <div className="w-10 h-10 bg-coral-500 rounded-xl flex items-center justify-center">
             <Music className="w-5 h-5 text-white" />
@@ -126,7 +132,8 @@ function SidebarContent({ user, pathname, onClose, onLogout }: { user: User; pat
         )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      {/* Scrollable Navigation */}
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-charcoal-700 scrollbar-track-transparent">
         {adminNavItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
           return (
@@ -139,27 +146,32 @@ function SidebarContent({ user, pathname, onClose, onLogout }: { user: User; pat
         })}
       </nav>
 
-      <div className="p-4 border-t border-charcoal-800">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-charcoal-800 transition-colors">
-              <Avatar>
-                <AvatarImage src={user.avatar} />
-                <AvatarFallback className="bg-coral-500 text-white">{getInitials(user.firstName, user.lastName)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-white">{user.firstName} {user.lastName}</p>
-                <p className="text-xs text-charcoal-400">Administrator</p>
-              </div>
-              <ChevronDown className="w-4 h-4 text-charcoal-400" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem asChild><Link href="/admin/settings">Settings</Link></DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout} className="text-red-600"><LogOut className="w-4 h-4 mr-2" />Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* Fixed Bottom Section */}
+      <div className="flex-shrink-0 border-t border-charcoal-800">
+        {/* Current User Info */}
+        <div className="p-4 border-b border-charcoal-800">
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarImage src={user.avatar} />
+              <AvatarFallback className="bg-coral-500 text-white">{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-white truncate">{user.firstName} {user.lastName}</p>
+              <p className="text-xs text-charcoal-400 truncate">{user.email}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Logout Button */}
+        <div className="p-4">
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
     </div>
   )

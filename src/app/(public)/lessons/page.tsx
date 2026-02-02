@@ -1,8 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Music, Clock, Users, ArrowRight, CheckCircle, Calendar, Award } from 'lucide-react'
+import { Music, Clock, Users, ArrowRight, CheckCircle, Calendar, Award, Loader2 } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
@@ -10,42 +11,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-const instruments = [
-  { 
-    name: 'Piano', 
-    image: '/images/instruments/Piano.jpg', 
-    description: 'Comprehensive preparation for ABRSM & LCME exams — from Step/Initial to Grade 8' 
-  },
-  { 
-    name: 'Guitar', 
-    image: '/images/instruments/Guitar.jpg', 
-    description: 'Acoustic, electric & bass guitar lessons following ABRSM & LCME syllabuses' 
-  },
-  { 
-    name: 'Drums', 
-    image: '/images/instruments/Drumset.jpg', 
-    description: 'Drum kit training with focus on graded exams (ABRSM & LCME)' 
-  },
-  { 
-    name: 'Violin', 
-    image: '/images/instruments/Violin.jpg', 
-    description: 'Classical violin instruction aligned with ABRSM & LCME requirements' 
-  },
-  { 
-    name: 'Trumpet', 
-    image: '/images/instruments/Trumpet.jpg', // ← add this image if available
-    description: 'Brass training for ABRSM & LCME graded exams and performances' 
-  },
-  { 
-    name: 'Saxophone', 
-    image: '/images/instruments/Saxophone.jpg', 
-    description: 'Jazz & classical saxophone preparation for ABRSM & LCME certifications' 
-  },
-  { 
-    name: 'Voice', 
-    image: '/images/instruments/Vocals.jpg', 
-    description: 'Singing & vocal technique — ABRSM & LCME syllabus for all levels' 
-  },
+interface Instrument {
+  id: string
+  name: string
+  description: string | null
+  icon: string | null
+}
+
+const fallbackInstruments = [
+  { id: '1', name: 'Piano', description: 'Comprehensive preparation for ABRSM & LCME exams — from Step/Initial to Grade 8', icon: null },
+  { id: '2', name: 'Guitar', description: 'Acoustic, electric & bass guitar lessons following ABRSM & LCME syllabuses', icon: null },
+  { id: '3', name: 'Drums', description: 'Drum kit training with focus on graded exams (ABRSM & LCME)', icon: null },
+  { id: '4', name: 'Violin', description: 'Classical violin instruction aligned with ABRSM & LCME requirements', icon: null },
+  { id: '5', name: 'Trumpet', description: 'Brass training for ABRSM & LCME graded exams and performances', icon: null },
+  { id: '6', name: 'Voice', description: 'Singing & vocal technique — ABRSM & LCME syllabus for all levels', icon: null },
 ]
 
 const pricingTiers = [
@@ -67,6 +46,21 @@ const pricingTiers = [
 ]
 
 export default function LessonsPage() {
+  const [instruments, setInstruments] = useState<Instrument[]>(fallbackInstruments)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/instruments')
+      .then(res => res.json())
+      .then(data => {
+        if (data.instruments?.length > 0) {
+          setInstruments(data.instruments)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <main className="min-h-screen">
       <Header />
@@ -130,29 +124,33 @@ export default function LessonsPage() {
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {instruments.map((instrument) => (
-              <Link key={instrument.name} href={`/lessons/${instrument.name.toLowerCase()}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col sm:flex-row items-start gap-4">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform mx-auto sm:mx-0">
-                        <Image 
-                          src={instrument.image} 
-                          alt={instrument.name}
-                          width={96}
-                          height={96}
-                          className="w-full h-full object-cover"
-                        />
+            {loading ? (
+              <div className="col-span-full flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-coral-500" />
+              </div>
+            ) : (
+              instruments.map((instrument) => (
+                <Link key={instrument.id} href={`/lessons/${instrument.name.toLowerCase()}`}>
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col sm:flex-row items-start gap-4">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform mx-auto sm:mx-0 bg-coral-100 flex items-center justify-center">
+                          {instrument.icon ? (
+                            <span className="text-4xl">{instrument.icon}</span>
+                          ) : (
+                            <Music className="w-10 h-10 text-coral-500" />
+                          )}
+                        </div>
+                        <div className="flex-1 text-center sm:text-left">
+                          <h3 className="text-xl font-bold text-charcoal-900 mb-2">{instrument.name}</h3>
+                          <p className="text-charcoal-600 text-sm mb-3">{instrument.description || 'Expert instruction following ABRSM & LCME syllabuses'}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 text-center sm:text-left">
-                        <h3 className="text-xl font-bold text-charcoal-900 mb-2">{instrument.name}</h3>
-                        <p className="text-charcoal-600 text-sm mb-3">{instrument.description}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))
+            )}
           </div>
         </div>
       </section>

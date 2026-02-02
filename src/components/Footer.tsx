@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { Music, MapPin, Phone, Mail, Facebook, Instagram, Youtube, Twitter } from 'lucide-react'
+import { Music, MapPin, Phone, Mail, Facebook, Instagram, Youtube, Twitter, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import toast from 'react-hot-toast'
 
 const footerLinks = {
   sitemap: [
@@ -37,6 +39,47 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const [email, setEmail] = useState('')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!email.trim()) {
+      toast.error('Please enter your email address')
+      return
+    }
+
+    if (!agreedToTerms) {
+      toast.error('Please agree to the terms and conditions')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success(data.message || 'Subscribed successfully!')
+        setEmail('')
+        setAgreedToTerms(false)
+      } else {
+        toast.error(data.error || 'Failed to subscribe')
+      }
+    } catch (error) {
+      toast.error('Failed to subscribe. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <footer className="bg-charcoal-950 text-white">
       {/* Studio Images Strip */}
@@ -141,16 +184,22 @@ export function Footer() {
             <p className="text-charcoal-400 text-sm mb-4">
               Get updates on new courses, workshops, and exclusive offers.
             </p>
-            <form className="space-y-3">
+            <form onSubmit={handleSubscribe} className="space-y-3">
               <Input
                 type="email"
                 placeholder="Your email..."
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={submitting}
                 className="bg-charcoal-800 border-charcoal-700 text-white placeholder:text-charcoal-500 focus:border-coral-500"
               />
               <div className="flex items-start gap-2">
                 <input
                   type="checkbox"
                   id="terms"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  disabled={submitting}
                   className="mt-1 w-4 h-4 rounded border-charcoal-600 bg-charcoal-800 text-coral-500 focus:ring-coral-500"
                 />
                 <label htmlFor="terms" className="text-xs text-charcoal-400">
@@ -160,8 +209,15 @@ export function Footer() {
                   </Link>
                 </label>
               </div>
-              <Button type="submit" className="w-full">
-                Subscribe
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Subscribing...
+                  </>
+                ) : (
+                  'Subscribe'
+                )}
               </Button>
             </form>
           </div>
