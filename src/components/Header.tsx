@@ -71,7 +71,7 @@ export function Header() {
                   isScrolled || !isHomePage ? 'text-charcoal-900' : 'text-white'
                 )}
               >
-                MUSICAL MASTERS
+                BEE MUSICAL MASTERS
               </span>
             </Link>
 
