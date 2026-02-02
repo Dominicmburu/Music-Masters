@@ -59,7 +59,7 @@ export function Footer() {
               <div className="w-10 h-10 bg-coral-500 rounded-xl flex items-center justify-center">
                 <Music className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold font-display">MUSICAL MASTERS</span>
+              <span className="text-xl font-bold font-display">BEE MUSICAL MASTERS</span>
             </Link>
             <p className="text-charcoal-400 text-sm leading-relaxed mb-6">
               Transform your musical journey with expert instruction, premium instruments, 
