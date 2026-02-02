@@ -94,26 +94,6 @@ export default function HomePage() {
         }
       })
       .catch(() => {})
-
-    fetch('/api/instruments')
-      .then(res => res.json())
-      .then(data => {
-        if (data.instruments?.length > 0) {
-          // Merge API data with fallback descriptions and images
-          const mergedInstruments = data.instruments.slice(0, 6).map((apiInstrument: any) => {
-            const fallbackMatch = fallbackInstruments.find(
-              fb => fb.name.toLowerCase() === apiInstrument.name.toLowerCase()
-            )
-            return {
-              ...apiInstrument,
-              image: apiInstrument.image || fallbackMatch?.image || '',
-              description: fallbackMatch?.description || apiInstrument.description || ''
-            }
-          })
-          setInstruments(mergedInstruments)
-        }
-      })
-      .catch(() => {})
   }, [])
 
   return (
